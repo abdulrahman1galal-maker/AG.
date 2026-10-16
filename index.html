@@ -580,14 +580,6 @@
       box-shadow: 0 4px 18px rgba(37,99,235,0.35);
     }
 
-    .btn-primary:hover {
-      background: transparent;
-      color: var(--primary);
-      border-color: var(--primary);
-      transform: translateY(-4px) scale(1.05);
-      box-shadow: none;
-    }
-
     .btn-outline {
       background: transparent;
       color: var(--primary);
@@ -595,21 +587,54 @@
       box-shadow: none;
     }
 
-    .btn-outline:hover {
+    /* Hover effect for desktop (mouse only) */
+    @media (hover: hover) and (pointer: fine) {
+      .btn-primary:hover {
+        background: transparent;
+        color: var(--primary);
+        border-color: var(--primary);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: none;
+      }
+
+      .btn-outline:hover {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          #1d4ed8 60%,
+          var(--accent) 100%
+        );
+        color: #ffffff;
+        border-color: transparent;
+        transform: translateY(-4px) scale(1.05);
+        box-shadow:
+          0 0 0 4px rgba(37,99,235,0.18),
+          0 0 24px 6px rgba(37,99,235,0.55),
+          0 0 60px 14px rgba(14,165,233,0.28),
+          0 8px 28px rgba(37,99,235,0.4);
+      }
+    }
+
+    /* Active effect for mobile tap / touch */
+    .btn-primary:active {
+      background: transparent !important;
+      color: var(--primary) !important;
+      border-color: var(--primary) !important;
+      box-shadow: none !important;
+      transform: scale(0.97);
+    }
+
+    .btn-outline:active {
       background: linear-gradient(
         135deg,
         var(--primary) 0%,
         #1d4ed8 60%,
         var(--accent) 100%
-      );
-      color: #ffffff;
-      border-color: transparent;
-      transform: translateY(-4px) scale(1.05);
-      box-shadow:
-        0 0 0 4px rgba(37,99,235,0.18),
-        0 0 24px 6px rgba(37,99,235,0.55),
-        0 0 60px 14px rgba(14,165,233,0.28),
-        0 8px 28px rgba(37,99,235,0.4);
+      ) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+      box-shadow: 0 0 16px rgba(37,99,235,0.4) !important;
+      transform: scale(0.97);
     }
 
     /* =========================================================
@@ -1625,13 +1650,38 @@
         width: 12px;
       }
 
+      /* Mobile Performance Optimizations */
+      nav,
+      .skill-card,
+      .project-card,
+      .cert-frame,
+      .contact-wrap,
+      .info-card {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+      }
+
+      nav {
+        background: rgba(255, 255, 255, 0.98) !important;
+      }
+
+      .skill-card,
+      .project-card,
+      .cert-frame,
+      .contact-wrap,
+      .info-card {
+        background: #ffffff !important;
+      }
+
       .cyber-symbol {
         font-size: 24px !important;
-        opacity: 0.55;
+        opacity: 0.45;
+        will-change: auto;
       }
 
       .cyber-grid {
         background-size: 38px 38px;
+        will-change: auto;
       }
     }
 
@@ -2554,164 +2604,87 @@
   );
 
   /* =========================================================
-     CYBERSECURITY PARALLAX
+     CYBERSECURITY PARALLAX & SENSORS (Optimized for Mobile)
   ========================================================= */
+
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
 
   const parallaxElements =
     document.querySelectorAll('.parallax');
 
   let scrollY = window.scrollY;
-
   let ticking = false;
 
   function updateParallax() {
+    if (isTouchDevice) {
+      ticking = false;
+      return; // Skip heavy JS parallax on mobile touch screens for butter-smooth scrolling
+    }
 
-    parallaxElements.forEach(
-      element => {
+    parallaxElements.forEach(element => {
+      const speed = parseFloat(element.dataset.speed) || 0.1;
+      const rect = element.parentElement.getBoundingClientRect();
+      const sectionTop = rect.top + window.scrollY;
+      const distance = scrollY - sectionTop;
+      const movement = distance * speed;
 
-        const speed =
-          parseFloat(
-            element.dataset.speed
-          ) || 0.1;
-
-        const rect =
-          element.parentElement.getBoundingClientRect();
-
-        const sectionTop =
-          rect.top + window.scrollY;
-
-        const distance =
-          scrollY - sectionTop;
-
-        const movement =
-          distance * speed;
-
-        element.style.transform =
-          `translate3d(0, ${movement}px, 0)`;
-
-      }
-    );
+      element.style.transform = `translate3d(0, ${movement}px, 0)`;
+    });
 
     ticking = false;
   }
 
-  window.addEventListener(
-    'scroll',
-    () => {
-
-      scrollY =
-        window.scrollY;
-
-      if (!ticking) {
-
-        window.requestAnimationFrame(
-          updateParallax
-        );
-
-        ticking = true;
-
-      }
-
-    },
-    {
-      passive: true
-    }
-  );
-
-  updateParallax();
-
-  /* =========================================================
-     MOVING GRID WITH SCROLL
-  ========================================================= */
-
-  const grids =
-    document.querySelectorAll(
-      '.cyber-grid'
+  if (!isTouchDevice) {
+    window.addEventListener(
+      'scroll',
+      () => {
+        scrollY = window.scrollY;
+        if (!ticking) {
+          window.requestAnimationFrame(updateParallax);
+          ticking = true;
+        }
+      },
+      { passive: true }
     );
 
-  window.addEventListener(
-    'scroll',
-    () => {
+    updateParallax();
 
-      const y =
-        window.scrollY * 0.08;
-
-      grids.forEach(
-        grid => {
-
-          grid.style.transform =
-            `translate3d(0, ${y}px, 0)`;
-
-        }
-      );
-
-    },
-    {
-      passive: true
-    }
-  );
-
-  /* =========================================================
-     MOUSE MOVEMENT
-  ========================================================= */
-
-  const symbols =
-    document.querySelectorAll(
-      '.cyber-symbol'
+    /* MOVING GRID WITH SCROLL (Desktop only) */
+    const grids = document.querySelectorAll('.cyber-grid');
+    window.addEventListener(
+      'scroll',
+      () => {
+        const y = window.scrollY * 0.08;
+        grids.forEach(grid => {
+          grid.style.transform = `translate3d(0, ${y}px, 0)`;
+        });
+      },
+      { passive: true }
     );
 
-  let mouseX = 0;
-  let mouseY = 0;
+    /* MOUSE MOVEMENT (Desktop only) */
+    const symbols = document.querySelectorAll('.cyber-symbol');
+    let mouseX = 0;
+    let mouseY = 0;
 
-  window.addEventListener(
-    'mousemove',
-    event => {
+    window.addEventListener(
+      'mousemove',
+      event => {
+        mouseX = (event.clientX / window.innerWidth - 0.5);
+        mouseY = (event.clientY / window.innerHeight - 0.5);
 
-      mouseX =
-        (event.clientX / window.innerWidth - 0.5);
+        symbols.forEach(element => {
+          const speed = parseFloat(element.dataset.speed) || 0.1;
+          const x = mouseX * speed * 35;
+          const y = mouseY * speed * 35;
+          const scrollMovement = (scrollY - (element.parentElement.getBoundingClientRect().top + scrollY)) * speed;
 
-      mouseY =
-        (event.clientY / window.innerHeight - 0.5);
-
-      symbols.forEach(
-        element => {
-
-          const speed =
-            parseFloat(
-              element.dataset.speed
-            ) || 0.1;
-
-          const x =
-            mouseX * speed * 35;
-
-          const y =
-            mouseY * speed * 35;
-
-          const scrollMovement =
-            (scrollY -
-              (
-                element.parentElement
-                  .getBoundingClientRect()
-                  .top +
-                scrollY
-              )
-            ) * speed;
-
-          element.style.transform =
-            `translate3d(
-              ${x}px,
-              ${scrollMovement + y}px,
-              0
-            )`;
-
-        }
-      );
-
-    },
-    {
-      passive: true
-    }
-  );
+          element.style.transform = `translate3d(${x}px, ${scrollMovement + y}px, 0)`;
+        });
+      },
+      { passive: true }
+    );
+  }
 
   /* =========================================================
      RANDOM CYBER PARTICLES
